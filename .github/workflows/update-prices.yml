@@ -5,6 +5,9 @@ on:
     - cron: '0 22 * * *'  # 毎日7:00 JST (22:00 UTC)
   workflow_dispatch:  # 手動実行も可能
 
+permissions:
+  contents: write
+
 jobs:
   update-prices:
     runs-on: ubuntu-latest
