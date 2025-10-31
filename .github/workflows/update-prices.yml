@@ -1,0 +1,39 @@
+name: Update Price Data
+
+on:
+  schedule:
+    - cron: '0 22 * * *'  # 毎日7:00 JST (22:00 UTC)
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Create data directory
+        run: mkdir -p data
+      
+      - name: Fetch raw price data
+        run: |
+          curl "https://api.cultivationdata.net/yasai_kakaku?div=all" \
+            -o data/prices_raw.json
+      
+      - name: Process price data
+        run: node scripts/process-prices.js
+      
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/prices.json
+          git diff --quiet && git diff --staged --quiet || \
+          (git commit -m "Update prices: $(date +'%Y-%m-%d %H:%M')" && git push)
+```
